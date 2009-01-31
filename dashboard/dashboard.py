@@ -27,6 +27,7 @@ class DashBoard(Component):
         self.db = self.env.get_db_cnx()
         self.perm = self.config.get('dashboard', 'permission', '').upper()
         self.username = None
+        self.backDate = 14
         
         if not self.perm:
             self.perm = 'DASHBOARD_VIEW'
@@ -73,13 +74,29 @@ class DashBoard(Component):
             out.append(data)
         return out
 
+    def get_ticket_counts(self):
+        cursor = self.db.cursor()
+        sql = "select count(*) as total, status from ticket where (owner = '%s') and (changetime >= %s) group by status" % (self.username, self.stamp)
+        cursor.execute(sql)
+        out = []
+        for total, status in cursor:
+            data = {
+                'total': total,
+                'status': status
+            }
+            out.append(data)
+
+        return out
+
     def process_request(self, req):
         data = {}
-        self.stamp = time.time() - (60 * 60 * 24 * 7)
+        self.stamp = time.time() - (60 * 60 * 24 * self.backDate)
         today = datetime.now(req.tz)
-
+        
+        data['backDate'] = self.backDate
         data['username'] = self.username
         data['new_tickets'] = self.get_new_tickets()
+        data['ticket_counts'] = self.get_ticket_counts()
 
 
         add_script(req, "dashboard/dashboard.js")

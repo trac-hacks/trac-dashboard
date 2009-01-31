@@ -13,7 +13,7 @@
 <body>
 <h1>Developer Dashboard for ${username}</h1>
 
-<h3>Updated this Week</h3>
+<h3>Updated in the last ${backDate} days</h3>
 
 <table>
     <tbody>
@@ -24,7 +24,12 @@
     </py:for>
     </tbody>
 </table>
-
+<h3>Status Changes in the last ${backDate} days</h3>
+<ul>
+    <py:for each="item in ticket_counts">
+    <li><strong>${item.status}</strong> <em>${item.total}</em></li>
+    </py:for>
+</ul>
 
 </body>
 </html>    
