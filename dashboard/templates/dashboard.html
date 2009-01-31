@@ -13,17 +13,22 @@
 <body>
 <h1>Developer Dashboard for ${username}</h1>
 
+<h3>New Tickets in the last ${backDate} days</h3>
+
+<ul>
+    <py:for each="ticket in new_tickets">
+    <li><a href="ticket/${ticket.id}">[${ticket.component}] ${ticket.summary}</a></li>
+    </py:for>
+</ul>
+
 <h3>Updated in the last ${backDate} days</h3>
 
-<table>
-    <tbody>
-    <py:for each="ticket in new_tickets">
-    <tr>
-        <td><a href="ticket/${ticket.id}">[${ticket.component}](${ticket.status}): ${ticket.summary}</a></td>
-    </tr>
+<ul>
+    <py:for each="ticket in updated_tickets">
+    <li><a href="ticket/${ticket.id}">[${ticket.component}](${ticket.status}): ${ticket.summary}</a></li>
     </py:for>
-    </tbody>
-</table>
+</ul>
+
 <h3>Status Changes in the last ${backDate} days</h3>
 <ul>
     <py:for each="item in ticket_counts">

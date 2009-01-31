@@ -59,9 +59,24 @@ class DashBoard(Component):
 
         return serve
  
+    def get_updated_tickets(self):
+        cursor = self.db.cursor()
+        sql = "select id, component, summary, status from ticket where (owner = '%s') and (changetime >= %s) and (status not in ('checkedin', 'closed', 'new')) order by changetime desc" % (self.username, self.stamp)
+        cursor.execute(sql)
+        out = []
+        for id, component, summary, status in cursor:
+            data = {
+                'id': id,
+                'component': component,
+                'summary': summary,
+                'status': status
+            }
+            out.append(data)
+        return out
+
     def get_new_tickets(self):
         cursor = self.db.cursor()
-        sql = "select id, component, summary, status from ticket where (owner = '%s') and (time >= %s) and (status not in ('checkedin', 'closed')) order by changetime desc" % (self.username, self.stamp)
+        sql = "select id, component, summary, status from ticket where (owner = '%s') and (time >= %s) and (status = 'new') order by changetime desc" % (self.username, self.stamp)
         cursor.execute(sql)
         out = []
         for id, component, summary, status in cursor:
@@ -95,6 +110,7 @@ class DashBoard(Component):
         
         data['backDate'] = self.backDate
         data['username'] = self.username
+        data['updated_tickets'] = self.get_updated_tickets()
         data['new_tickets'] = self.get_new_tickets()
         data['ticket_counts'] = self.get_ticket_counts()
 
