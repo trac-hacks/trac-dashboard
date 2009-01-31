@@ -4,13 +4,15 @@ from trac.config import Option, IntOption, ListOption, BoolOption
 from trac.web.api import IRequestHandler, Href
 from trac.util.translation import _
 from trac.web.chrome import add_stylesheet, add_script, INavigationContributor, ITemplateProvider
-import datetime
 from trac.web.chrome import Chrome
 from trac.util.datefmt import utc, to_timestamp
 from genshi.template import TemplateLoader
 from genshi.filters.transform import Transformer
 from trac.web.api import ITemplateStreamFilter
 from trac.perm import IPermissionRequestor
+
+import time
+from datetime import datetime, timedelta
 
 
 
@@ -24,6 +26,7 @@ class DashBoard(Component):
     def __init__(self):
         self.db = self.env.get_db_cnx()
         self.perm = self.config.get('dashboard', 'permission', '').upper()
+        self.username = None
         
         if not self.perm:
             self.perm = 'DASHBOARD_VIEW'
@@ -48,15 +51,36 @@ class DashBoard(Component):
         self.env.log.debug("Handle Request: %s" % serve)
         self.baseURL = req.href('dashboard', '/')
         self.baseQueryURL = req.href('query', '/')
+        self.username = req.authname
         if not self.perm in req.perm:
             self.env.log.debug("NO Permission to view")
             return False
 
         return serve
  
+    def get_new_tickets(self):
+        cursor = self.db.cursor()
+        sql = "select id, component, summary, status from ticket where (owner = '%s') and (time >= %s) and (status not in ('checkedin', 'closed')) order by changetime desc" % (self.username, self.stamp)
+        cursor.execute(sql)
+        out = []
+        for id, component, summary, status in cursor:
+            data = {
+                'id': id,
+                'component': component,
+                'summary': summary,
+                'status': status
+            }
+            out.append(data)
+        return out
 
     def process_request(self, req):
         data = {}
+        self.stamp = time.time() - (60 * 60 * 24 * 7)
+        today = datetime.now(req.tz)
+
+        data['username'] = self.username
+        data['new_tickets'] = self.get_new_tickets()
+
 
         add_script(req, "dashboard/dashboard.js")
         add_stylesheet(req, "dashboard/dashboard.css")

@@ -9,14 +9,22 @@
       
 <head>
 	<title>Developer Dashboard</title>
-	<script type="text/javascript" py:choose="">
-	  $(document).ready(function() {
-          $("div.description").find("h1,h2,h3,h4,h5,h6").addAnchor("Link to this section");
-        });
-    </script>
 </head>
 <body>
-<h1>Developer Dashboard</h1>
+<h1>Developer Dashboard for ${username}</h1>
+
+<h3>Updated this Week</h3>
+
+<table>
+    <tbody>
+    <py:for each="ticket in new_tickets">
+    <tr>
+        <td><a href="ticket/${ticket.id}">[${ticket.component}](${ticket.status}): ${ticket.summary}</a></td>
+    </tr>
+    </py:for>
+    </tbody>
+</table>
+
 
 </body>
 </html>    
