@@ -9,3 +9,6 @@ So far, the follow reports are being generated (x = 14):
    * To Do in the last x days
    * Status Changes in the last x days
    * Milestone Bar Charts
+
+h2. Screen Shot
+![Screen Shot](http://github.com/davglass/trac-dashboard/tree/master/dashboard.png?raw=true)
