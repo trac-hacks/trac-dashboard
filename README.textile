@@ -11,4 +11,4 @@ So far, the follow reports are being generated (x = 14):
    * Milestone Bar Charts
 
 h2. Screen Shot
-![Screen Shot](http://github.com/davglass/trac-dashboard/tree/master/dashboard.png?raw=true)
+!http://github.com/davglass/trac-dashboard/tree/master/dashboard.png?raw=true(ScreenShot)!
