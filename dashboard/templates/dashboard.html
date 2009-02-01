@@ -13,28 +13,52 @@
 <body>
 <h1>Developer Dashboard for ${username}</h1>
 
-<h3>New Tickets in the last ${backDate} days</h3>
+<py:if test="has_new_tickets">
+<div id="new_tickets">
+    <h3>New Tickets in the last ${backDate} days</h3>
 
-<ul>
-    <py:for each="ticket in new_tickets">
-    <li><a href="ticket/${ticket.id}">[${ticket.component}] ${ticket.summary}</a></li>
-    </py:for>
-</ul>
+    <ul>
+        <py:for each="ticket in new_tickets">
+        <li><a href="ticket/${ticket.id}">[${ticket.component}] ${ticket.summary}</a></li>
+        </py:for>
+    </ul>
+</div>
+</py:if>
 
-<h3>Updated in the last ${backDate} days</h3>
+<py:if test="has_updated_tickets">
+<div id="updated_tickets">
+    <h3>Updated in the last ${backDate} days</h3>
 
-<ul>
-    <py:for each="ticket in updated_tickets">
-    <li><a href="ticket/${ticket.id}">[${ticket.component}](${ticket.status}): ${ticket.summary}</a></li>
-    </py:for>
-</ul>
+    <ul>
+        <py:for each="ticket in updated_tickets">
+        <li><a href="ticket/${ticket.id}">[${ticket.component}](${ticket.status}): ${ticket.summary}</a></li>
+        </py:for>
+    </ul>
+</div>
+</py:if>
 
-<h3>Status Changes in the last ${backDate} days</h3>
-<ul>
-    <py:for each="item in ticket_counts">
-    <li><strong>${item.status}</strong> <em>${item.total}</em></li>
-    </py:for>
-</ul>
+<py:if test="has_todo_tickets">
+<div id="todo_tickets">
+    <h3>To Do in the last ${backDate} days</h3>
+
+    <ul>
+        <py:for each="ticket in todo_tickets">
+        <li><a href="ticket/${ticket.id}">[${ticket.component}](${ticket.status}): ${ticket.summary}</a></li>
+        </py:for>
+    </ul>
+</div>
+</py:if>
+
+<py:if test="has_ticket_counts">
+<div id="ticket_counts">
+    <h3>Status Changes in the last ${backDate} days</h3>
+    <ul>
+        <py:for each="item in ticket_counts">
+        <li><strong>${item.status}</strong> <em>${item.total}</em></li>
+        </py:for>
+    </ul>
+</div>
+</py:if>
 
 </body>
 </html>    

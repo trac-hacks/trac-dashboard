@@ -76,7 +76,22 @@ class DashBoard(Component):
 
     def get_new_tickets(self):
         cursor = self.db.cursor()
-        sql = "select id, component, summary, status from ticket where (owner = '%s') and (time >= %s) and (status = 'new') order by changetime desc" % (self.username, self.stamp)
+        sql = "select id, component, summary, status from ticket where (owner = '%s') and (time >= %s) and (status = 'new') and (type = 'defect') order by changetime desc" % (self.username, self.stamp)
+        cursor.execute(sql)
+        out = []
+        for id, component, summary, status in cursor:
+            data = {
+                'id': id,
+                'component': component,
+                'summary': summary,
+                'status': status
+            }
+            out.append(data)
+        return out
+
+    def get_todo_tickets(self):
+        cursor = self.db.cursor()
+        sql = "select id, component, summary, status from ticket where (owner = '%s') and (changetime >= %s) and (status not in ('checkedin', 'closed')) and (type = 'task') order by changetime desc" % (self.username, self.stamp)
         cursor.execute(sql)
         out = []
         for id, component, summary, status in cursor:
@@ -91,7 +106,7 @@ class DashBoard(Component):
 
     def get_ticket_counts(self):
         cursor = self.db.cursor()
-        sql = "select count(*) as total, status from ticket where (owner = '%s') and (changetime >= %s) group by status" % (self.username, self.stamp)
+        sql = "select count(*) as total, status from ticket where (owner = '%s') and (changetime >= %s) and (type = 'defect') group by status" % (self.username, self.stamp)
         cursor.execute(sql)
         out = []
         for total, status in cursor:
@@ -110,9 +125,18 @@ class DashBoard(Component):
         
         data['backDate'] = self.backDate
         data['username'] = self.username
+        #Updated Tickets 
         data['updated_tickets'] = self.get_updated_tickets()
+        data['has_updated_tickets'] = len(data['updated_tickets'])
+        #New Tickets
         data['new_tickets'] = self.get_new_tickets()
+        data['has_new_tickets'] = len(data['new_tickets'])
+        #Ticket Counts
         data['ticket_counts'] = self.get_ticket_counts()
+        data['has_ticket_counts'] = len(data['ticket_counts'])
+        #TODO Lists
+        data['todo_tickets'] = self.get_todo_tickets()
+        data['has_todo_tickets'] = len(data['todo_tickets'])
 
 
         add_script(req, "dashboard/dashboard.js")

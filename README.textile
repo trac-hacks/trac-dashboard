@@ -1,0 +1,10 @@
+h2. Trac Developer Dashboard
+
+My hope is to create a developer dashboard filled with small reports that the developer can look at to track their time and plan their day.
+
+So far, the follow reports are being generated (x = 14):
+
+   * New tickets in the last x days
+   * Updated in the last x days
+   * To Do in the last x days
+   * Status Changes in the last x days
