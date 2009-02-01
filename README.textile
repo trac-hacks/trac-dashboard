@@ -8,3 +8,4 @@ So far, the follow reports are being generated (x = 14):
    * Updated in the last x days
    * To Do in the last x days
    * Status Changes in the last x days
+   * Milestone Bar Charts
