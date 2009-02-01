@@ -13,73 +13,115 @@
 <body>
 <h1>Developer Dashboard for ${username}</h1>
 
-<py:if test="has_new_tickets">
-<div id="new_tickets">
-    <h3>New Tickets in the last ${backDate} days</h3>
-
-    <ul>
-        <py:for each="ticket in new_tickets">
-        <li><a href="ticket/${ticket.id}">[${ticket.component}] ${ticket.summary}</a></li>
-        </py:for>
-    </ul>
-</div>
-</py:if>
-
-<py:if test="has_updated_tickets">
-<div id="updated_tickets">
-    <h3>Updated in the last ${backDate} days</h3>
-
-    <ul>
-        <py:for each="ticket in updated_tickets">
-        <li><a href="ticket/${ticket.id}">[${ticket.component}](${ticket.status}): ${ticket.summary}</a></li>
-        </py:for>
-    </ul>
-</div>
-</py:if>
-
-<py:if test="has_todo_tickets">
-<div id="todo_tickets">
-    <h3>To Do in the last ${backDate} days</h3>
-
-    <ul>
-        <py:for each="ticket in todo_tickets">
-        <li><a href="ticket/${ticket.id}">[${ticket.component}](${ticket.status}): ${ticket.summary}</a></li>
-        </py:for>
-    </ul>
-</div>
-</py:if>
-
-<py:if test="has_ticket_counts">
-<div id="ticket_counts">
-    <h3>Status Changes in the last ${backDate} days</h3>
-    <ul>
-        <py:for each="item in ticket_counts">
-        <li><strong>${item.status}</strong> <em>${item.total}</em></li>
-        </py:for>
-    </ul>
-</div>
-</py:if>
-
-<py:if test="has_milestones">
-    <h3>Milestones</h3>
-        <py:for each="item in milestone_data">
-            <h4>${item.name}</h4>
+<div class="yui-gf">
+    <div class="yui-u first">
+        <py:if test="has_milestones">
+            <h3>Milestone ${milestone_data.name}</h3>
             <div class="milestone-chart">
                 <div class="bar">
-                    <div class="item closed" style="width: ${item.closed_percent}%"></div>
-                    <div class="item inprogress" style="width: ${item.inprogress_percent}%"></div>
-                    <div class="item new" style="width: ${item.new_percent}%"></div>
+                    <div class="item closed" style="width: ${milestone_data.closed_percent}%"></div>
+                    <div class="item inprogress" style="width: ${milestone_data.inprogress_percent}%"></div>
+                    <div class="item new" style="width: ${milestone_data.new_percent}%"></div>
                 </div>
 
                 <ul>
-                    <li>Total: ${item.total}</li>
-                    <li>Closed: ${item.closed_percent}%</li>
-                    <li>In Progress: ${item.inprogress_percent}%</li>
-                    <li>New: ${item.new_percent}%</li>
+                    <li>Total: ${milestone_data.total}</li>
+                    <li>Closed: ${milestone_data.closed_percent}%</li>
+                    <li>In Progress: ${milestone_data.inprogress_percent}%</li>
+                    <li>New: ${milestone_data.new_percent}%</li>
                 </ul>
             </div>
-        </py:for>
-</py:if>
+        </py:if>
+        <py:if test="has_ticket_counts">
+        <div id="ticket_counts">
+            <h3>Status Changes in the last ${backDate} days</h3>
+            <table class="listing tickets">
+            <thead>
+                <th>#</th>
+                <th>Status</th>
+            </thead>
+            <tbody>
+                <py:for each="item in ticket_counts">
+                    <tr>
+                        <td>${item.total}</td>
+                        <td>${item.status}</td>
+                    </tr>
+                </py:for>
+            </tbody>
+            </table>
+        </div>
+        </py:if>
 
+
+        <py:if test="has_todo_tickets">
+        <div id="todo_tickets">
+            <h3>My To Do Items</h3>
+            <table class="listing tickets">
+            <thead>
+                <th>Summary</th>
+            </thead>
+            <tbody>
+                <py:for each="ticket in todo_tickets">
+                <tr>
+                    <td><a href="ticket/${ticket.id}">${ticket.summary}</a></td>
+                </tr>
+                </py:for>
+            </tbody>
+            </table>
+        </div>
+        </py:if>
+
+
+	</div>
+    <div class="yui-u">
+        <py:if test="has_new_tickets">
+        <div id="new_tickets">
+            <h3>New Tickets in the last ${backDate} days</h3>
+            <table class="listing tickets">
+            <thead>
+                <th>Ticket</th>
+                <th>Status</th>
+                <th>Component</th>
+                <th>Summary</th>
+            </thead>
+            <tbody>
+                <py:for each="ticket in new_tickets">
+                <tr>
+                    <td><a href="ticket/${ticket.id}">#${ticket.id}</a></td>
+                    <td><a href="ticket/${ticket.id}">${ticket.status}</a></td>
+                    <td><a href="ticket/${ticket.id}">${ticket.component}</a></td>
+                    <td><a href="ticket/${ticket.id}">${ticket.summary}</a></td>
+                </tr>
+                </py:for>
+            </tbody>
+            </table>
+        </div>
+        </py:if>
+
+        <py:if test="has_updated_tickets">
+        <div id="updated_tickets">
+            <h3>Updated in the last ${backDate} days</h3>
+            <table class="listing tickets">
+            <thead>
+                <th>Ticket</th>
+                <th>Status</th>
+                <th>Component</th>
+                <th>Summary</th>
+            </thead>
+            <tbody>
+                <py:for each="ticket in updated_tickets">
+                <tr>
+                    <td><a href="ticket/${ticket.id}">#${ticket.id}</a></td>
+                    <td><a href="ticket/${ticket.id}">${ticket.status}</a></td>
+                    <td><a href="ticket/${ticket.id}">${ticket.component}</a></td>
+                    <td><a href="ticket/${ticket.id}">${ticket.summary}</a></td>
+                </tr>
+                </py:for>
+            </tbody>
+            </table>
+        </div>
+        </py:if>
+	</div>
+</div>
 </body>
 </html>    

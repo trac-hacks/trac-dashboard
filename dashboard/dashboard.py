@@ -10,6 +10,7 @@ from genshi.template import TemplateLoader
 from genshi.filters.transform import Transformer
 from trac.web.api import ITemplateStreamFilter
 from trac.perm import IPermissionRequestor
+from trac.util import escape, Markup
 
 import time
 from datetime import datetime, timedelta
@@ -18,22 +19,33 @@ from datetime import datetime, timedelta
 
 
 class DashBoard(Component):
-    implements(IRequestHandler, ITemplateProvider, IPermissionRequestor)
+    implements(IRequestHandler, ITemplateProvider, IPermissionRequestor, INavigationContributor)
     
-    permission = ListOption('dashboard', 'permission', '')
-    
+    permission = Option('dashboard', 'permission', '')
+    default_milestone = Option('ticket', 'default_milestone', '')
 
     def __init__(self):
         self.db = self.env.get_db_cnx()
-        self.perm = self.config.get('dashboard', 'permission', '').upper()
         self.username = None
         self.backDate = 14
         self.ticket_closed = ['checkedin', 'closed']
         
-        if not self.perm:
+        if self.permission:
+            self.perm = self.permission
+        else:
             self.perm = 'DASHBOARD_VIEW'
 
-        self.env.log.debug("Using Permission: %s" % self.perm)
+        self.env.log.debug("Using Permission: %s" % self.permission)
+
+    
+    # INavigationContributor methods
+    def get_active_navigation_item(self, req):
+        return 'dashboard'
+
+    def get_navigation_items(self, req):
+        if self.perm in req.perm:
+            yield 'mainnav', 'dashboard', Markup('<a href="%s">Dashboard</a>' % (
+                    self.env.href.dashboard() ) )
 
 
     def get_permission_actions(self):
@@ -92,7 +104,7 @@ class DashBoard(Component):
 
     def get_todo_tickets(self):
         cursor = self.db.cursor()
-        sql = "select id, component, summary, status from ticket where (owner = '%s') and (changetime >= %s) and (status not in ('checkedin', 'closed')) and (type = 'task') order by changetime desc" % (self.username, self.stamp)
+        sql = "select id, component, summary, status from ticket where (owner = '%s') and (status not in ('checkedin', 'closed')) and (type = 'task') order by changetime desc" % self.username
         cursor.execute(sql)
         out = []
         for id, component, summary, status in cursor:
@@ -119,73 +131,46 @@ class DashBoard(Component):
 
         return out
 
-    def get_milestones(self):
+
+    def get_milestone_data(self):
         cursor = self.db.cursor()
-        sql = "select count(*) as total, milestone from ticket where (owner = '%s') and (milestone <> '') group by milestone" % self.username
-        cursor.execute(sql)
-        out = []
-        for total, milestone in cursor:
-            data = {
-                'total': total,
-                'milestone': milestone
-            }
-            out.append(data)
+        out = {
+            'total': 0,
+            'closed': 0,
+            'new': 0,
+            'inprogress': 0
+        }
 
-        return out
-
-    def get_milestone_data(self, milestones):
-        cursor = self.db.cursor()
-        stones = []
-        out = {}
-        for i in milestones:
-            stones.append(i['milestone'])
-            out[i['milestone']] = {
-                'name': i['milestone'],
-                'total': 0,
-                'new': 0,
-                'closed': 0,
-                'inprogress': 0
-            }
-
-        sql = "select count(*) as total, status, milestone from ticket where (milestone in ('%s')) and (owner = '%s') and (type = 'defect') group by milestone, status" % ("','".join(stones), self.username)
+        sql = "select count(*) as total, status from ticket where (milestone = '%s') and (owner = '%s') and (type = 'defect') group by status" % (self.default_milestone, self.username)
         cursor.execute(sql)
 
-        data = []
-        count = 0
-        new = 0
-        closed = 0
-        inprogress = 0
-
-        for total, status, milestone in cursor:
-            out[milestone]['total'] = out[milestone]['total'] + total
+        for total, status in cursor:
+            out['total'] = out['total'] + total
 
             if status in self.ticket_closed:
-                out[milestone]['closed'] = out[milestone]['closed'] + total
+                out['closed'] = out['closed'] + total
             elif status == 'new':
-                out[milestone]['new'] = out[milestone]['new'] + total
+                out['new'] = out['new'] + total
             else:
-                out[milestone]['inprogress'] = out[milestone]['inprogress'] + total
-        
-        info = []
-        for i in out:
-            tmp = out[i]
-            tmp['closed_percent'] = int(round((float(tmp['closed']) / tmp['total']), 3) * 100)
-            tmp['new_percent'] = int(round((float(tmp['new']) / tmp['total']), 1) * 100)
-            tmp['inprogress_percent'] = int(round((float(tmp['inprogress']) / tmp['total']), 3) * 100)
-            info.append(tmp)
+                out['inprogress'] = out['inprogress'] + total
 
-        self.env.log.debug(info)
+        out['name'] = self.default_milestone
+        out['closed_percent'] = int(round((float(out['closed']) / out['total']), 3) * 100)
+        out['new_percent'] = int(round((float(out['new']) / out['total']), 1) * 100)
+        out['inprogress_percent'] = int(round((float(out['inprogress']) / out['total']), 3) * 100)
 
-        return info
+
+        return out
         
 
     def process_request(self, req):
         data = {}
         self.stamp = time.time() - (60 * 60 * 24 * self.backDate)
         today = datetime.now(req.tz)
-        
+
         data['backDate'] = self.backDate
         data['username'] = self.username
+        data['default_milestone'] = self.default_milestone
         #Updated Tickets 
         data['updated_tickets'] = self.get_updated_tickets()
         data['has_updated_tickets'] = len(data['updated_tickets'])
@@ -198,11 +183,10 @@ class DashBoard(Component):
         #TODO Lists
         data['todo_tickets'] = self.get_todo_tickets()
         data['has_todo_tickets'] = len(data['todo_tickets'])
-        #Milestones
-        data['milestones'] = self.get_milestones()
-        data['has_milestones'] = len(data['milestones'])
 
-        data['milestone_data'] = self.get_milestone_data(data['milestones'])
+        #Milestones
+        data['milestone_data'] = self.get_milestone_data()
+        data['has_milestones'] = len(data['milestone_data'])
 
 
         add_script(req, "dashboard/dashboard.js")

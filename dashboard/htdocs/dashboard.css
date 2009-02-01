@@ -12,10 +12,11 @@
     position: relative;
 }
 .milestone-chart div.bar {
-    width: 250px;
+    width: 275px;
     border: 1px solid black;
     height: 15px;
 }
+
 .milestone-chart div.bar div.item {
     background-color: white;
     float: left;
