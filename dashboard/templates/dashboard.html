@@ -60,5 +60,26 @@
 </div>
 </py:if>
 
+<py:if test="has_milestones">
+    <h3>Milestones</h3>
+        <py:for each="item in milestone_data">
+            <h4>${item.name}</h4>
+            <div class="milestone-chart">
+                <div class="bar">
+                    <div class="item closed" style="width: ${item.closed_percent}%"></div>
+                    <div class="item inprogress" style="width: ${item.inprogress_percent}%"></div>
+                    <div class="item new" style="width: ${item.new_percent}%"></div>
+                </div>
+
+                <ul>
+                    <li>Total: ${item.total}</li>
+                    <li>Closed: ${item.closed_percent}%</li>
+                    <li>In Progress: ${item.inprogress_percent}%</li>
+                    <li>New: ${item.new_percent}%</li>
+                </ul>
+            </div>
+        </py:for>
+</py:if>
+
 </body>
 </html>    

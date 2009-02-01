@@ -28,6 +28,7 @@ class DashBoard(Component):
         self.perm = self.config.get('dashboard', 'permission', '').upper()
         self.username = None
         self.backDate = 14
+        self.ticket_closed = ['checkedin', 'closed']
         
         if not self.perm:
             self.perm = 'DASHBOARD_VIEW'
@@ -118,6 +119,66 @@ class DashBoard(Component):
 
         return out
 
+    def get_milestones(self):
+        cursor = self.db.cursor()
+        sql = "select count(*) as total, milestone from ticket where (owner = '%s') and (milestone <> '') group by milestone" % self.username
+        cursor.execute(sql)
+        out = []
+        for total, milestone in cursor:
+            data = {
+                'total': total,
+                'milestone': milestone
+            }
+            out.append(data)
+
+        return out
+
+    def get_milestone_data(self, milestones):
+        cursor = self.db.cursor()
+        stones = []
+        out = {}
+        for i in milestones:
+            stones.append(i['milestone'])
+            out[i['milestone']] = {
+                'name': i['milestone'],
+                'total': 0,
+                'new': 0,
+                'closed': 0,
+                'inprogress': 0
+            }
+
+        sql = "select count(*) as total, status, milestone from ticket where (milestone in ('%s')) and (owner = '%s') and (type = 'defect') group by milestone, status" % ("','".join(stones), self.username)
+        cursor.execute(sql)
+
+        data = []
+        count = 0
+        new = 0
+        closed = 0
+        inprogress = 0
+
+        for total, status, milestone in cursor:
+            out[milestone]['total'] = out[milestone]['total'] + total
+
+            if status in self.ticket_closed:
+                out[milestone]['closed'] = out[milestone]['closed'] + total
+            elif status == 'new':
+                out[milestone]['new'] = out[milestone]['new'] + total
+            else:
+                out[milestone]['inprogress'] = out[milestone]['inprogress'] + total
+        
+        info = []
+        for i in out:
+            tmp = out[i]
+            tmp['closed_percent'] = int(round((float(tmp['closed']) / tmp['total']), 3) * 100)
+            tmp['new_percent'] = int(round((float(tmp['new']) / tmp['total']), 1) * 100)
+            tmp['inprogress_percent'] = int(round((float(tmp['inprogress']) / tmp['total']), 3) * 100)
+            info.append(tmp)
+
+        self.env.log.debug(info)
+
+        return info
+        
+
     def process_request(self, req):
         data = {}
         self.stamp = time.time() - (60 * 60 * 24 * self.backDate)
@@ -137,6 +198,11 @@ class DashBoard(Component):
         #TODO Lists
         data['todo_tickets'] = self.get_todo_tickets()
         data['has_todo_tickets'] = len(data['todo_tickets'])
+        #Milestones
+        data['milestones'] = self.get_milestones()
+        data['has_milestones'] = len(data['milestones'])
+
+        data['milestone_data'] = self.get_milestone_data(data['milestones'])
 
 
         add_script(req, "dashboard/dashboard.js")
