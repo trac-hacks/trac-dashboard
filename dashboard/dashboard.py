@@ -43,9 +43,10 @@ class DashBoard(Component):
         return 'dashboard'
 
     def get_navigation_items(self, req):
-        if self.perm in req.perm:
+        if self.perm in req.perm or 'TRAC_ADMIN' in req.perm:
             yield 'mainnav', 'dashboard', Markup('<a href="%s">Dashboard</a>' % (
                     self.env.href.dashboard() ) )
+
 
 
     def get_permission_actions(self):
@@ -66,6 +67,13 @@ class DashBoard(Component):
         self.baseURL = req.href('dashboard', '/')
         self.baseQueryURL = req.href('query', '/')
         self.username = req.authname
+
+        if 'TRAC_ADMIN' in req.perm:
+            if 'dev' in req.args:
+                self.username = req.args.get('dev')
+
+            return serve
+
         if not self.perm in req.perm:
             self.env.log.debug("NO Permission to view")
             return False
@@ -137,8 +145,12 @@ class DashBoard(Component):
         out = {
             'total': 0,
             'closed': 0,
+            'closed_percent': 0,
             'new': 0,
-            'inprogress': 0
+            'new_percent': 0,
+            'inprogress': 0,
+            'inprogress_percent': 0,
+            'name': self.default_milestone
         }
 
         sql = "select count(*) as total, status from ticket where (milestone = '%s') and (owner = '%s') and (type = 'defect') group by status" % (self.default_milestone, self.username)
@@ -154,10 +166,14 @@ class DashBoard(Component):
             else:
                 out['inprogress'] = out['inprogress'] + total
 
-        out['name'] = self.default_milestone
-        out['closed_percent'] = int(round((float(out['closed']) / out['total']), 3) * 100)
-        out['new_percent'] = int(round((float(out['new']) / out['total']), 1) * 100)
-        out['inprogress_percent'] = int(round((float(out['inprogress']) / out['total']), 3) * 100)
+        if out['closed'] > 0:
+            out['closed_percent'] = int(round((float(out['closed']) / out['total']), 3) * 100)
+
+        if out['new'] > 0:
+            out['new_percent'] = int(round((float(out['new']) / out['total']), 1) * 100)
+
+        if out['inprogress'] > 0:
+            out['inprogress_percent'] = int(round((float(out['inprogress']) / out['total']), 3) * 100)
 
 
         return out
