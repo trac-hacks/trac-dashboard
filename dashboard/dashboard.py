@@ -85,13 +85,16 @@ class DashBoard(Component):
         sql = "select id, component, summary, status from ticket where (owner = '%s') and (changetime >= %s) and (status not in ('checkedin', 'closed', 'new')) order by changetime desc" % (self.username, self.stamp)
         cursor.execute(sql)
         out = []
+        idx = 0
         for id, component, summary, status in cursor:
             data = {
+                '__idx__': idx,
                 'id': id,
                 'component': component,
                 'summary': summary,
                 'status': status
             }
+            idx = idx + 1
             out.append(data)
         return out
 
@@ -100,13 +103,16 @@ class DashBoard(Component):
         sql = "select id, component, summary, status from ticket where (owner = '%s') and (time >= %s) and (status = 'new') and (type = 'defect') order by changetime desc" % (self.username, self.stamp)
         cursor.execute(sql)
         out = []
+        idx = 0
         for id, component, summary, status in cursor:
             data = {
+                '__idx__': idx,
                 'id': id,
                 'component': component,
                 'summary': summary,
                 'status': status
             }
+            idx = idx + 1
             out.append(data)
         return out
 
@@ -115,13 +121,16 @@ class DashBoard(Component):
         sql = "select id, component, summary, status from ticket where (owner = '%s') and (status not in ('checkedin', 'closed')) and (type = 'task') order by changetime desc" % self.username
         cursor.execute(sql)
         out = []
+        idx = 0
         for id, component, summary, status in cursor:
             data = {
+                '__idx__': idx,
                 'id': id,
                 'component': component,
                 'summary': summary,
                 'status': status
             }
+            idx = idx + 1
             out.append(data)
         return out
 
@@ -130,11 +139,14 @@ class DashBoard(Component):
         sql = "select count(*) as total, status from ticket where (owner = '%s') and (changetime >= %s) and (type = 'defect') group by status" % (self.username, self.stamp)
         cursor.execute(sql)
         out = []
+        idx = 0
         for total, status in cursor:
             data = {
+                '__idx__': idx,
                 'total': total,
                 'status': status
             }
+            idx = idx + 1
             out.append(data)
 
         return out

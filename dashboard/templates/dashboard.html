@@ -42,7 +42,7 @@
             </thead>
             <tbody>
                 <py:for each="item in ticket_counts">
-                    <tr>
+                    <tr class="color3-${item.__idx__ % 2 and 'odd' or 'even'}">
                         <td>${item.total}</td>
                         <td>${item.status}</td>
                     </tr>
@@ -62,7 +62,7 @@
             </thead>
             <tbody>
                 <py:for each="ticket in todo_tickets">
-                <tr>
+                <tr class="color3-${ticket.__idx__ % 2 and 'odd' or 'even'}">
                     <td><a href="ticket/${ticket.id}">${ticket.summary}</a></td>
                 </tr>
                 </py:for>
@@ -86,7 +86,7 @@
             </thead>
             <tbody>
                 <py:for each="ticket in new_tickets">
-                <tr>
+                <tr class="color3-${ticket.__idx__ % 2 and 'odd' or 'even'}">
                     <td><a href="ticket/${ticket.id}">#${ticket.id}</a></td>
                     <td><a href="ticket/${ticket.id}">${ticket.status}</a></td>
                     <td><a href="ticket/${ticket.id}">${ticket.component}</a></td>
@@ -110,7 +110,7 @@
             </thead>
             <tbody>
                 <py:for each="ticket in updated_tickets">
-                <tr>
+                <tr class="color3-${ticket.__idx__ % 2 and 'odd' or 'even'}">
                     <td><a href="ticket/${ticket.id}">#${ticket.id}</a></td>
                     <td><a href="ticket/${ticket.id}">${ticket.status}</a></td>
                     <td><a href="ticket/${ticket.id}">${ticket.component}</a></td>
