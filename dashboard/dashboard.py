@@ -29,6 +29,7 @@ class DashBoard(Component):
         self.username = None
         self.backDate = 14
         self.ticket_closed = ['checkedin', 'closed']
+        self.milestone = self.default_milestone
         
         if self.permission:
             self.perm = self.permission
@@ -67,6 +68,15 @@ class DashBoard(Component):
         self.baseURL = req.href('dashboard', '/')
         self.baseQueryURL = req.href('query', '/')
         self.username = req.authname
+        if 'milestone' in req.args:
+            self.milestone = req.args.get('milestone')
+
+        if self.milestone == '':
+            cursor = self.db.cursor()
+            sql = "select name from milestone where (completed = 0) limit 0, 1"
+            cursor.execute(sql)
+            for name in cursor:
+                self.milestone = name
 
         if 'TRAC_ADMIN' in req.perm:
             if 'dev' in req.args:
@@ -162,10 +172,10 @@ class DashBoard(Component):
             'new_percent': 0,
             'inprogress': 0,
             'inprogress_percent': 0,
-            'name': self.default_milestone
+            'name': self.milestone
         }
 
-        sql = "select count(*) as total, status from ticket where (milestone = '%s') and (owner = '%s') and (type = 'defect') group by status" % (self.default_milestone, self.username)
+        sql = "select count(*) as total, status from ticket where (milestone = '%s') and (owner = '%s') and (type = 'defect') group by status" % (self.milestone, self.username)
         cursor.execute(sql)
 
         for total, status in cursor:
@@ -198,7 +208,7 @@ class DashBoard(Component):
 
         data['backDate'] = self.backDate
         data['username'] = self.username
-        data['default_milestone'] = self.default_milestone
+        data['default_milestone'] = self.milestone
         #Updated Tickets 
         data['updated_tickets'] = self.get_updated_tickets()
         data['has_updated_tickets'] = len(data['updated_tickets'])
