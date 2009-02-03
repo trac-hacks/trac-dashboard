@@ -120,6 +120,30 @@
             </div>
             </py:if>
 
+            <py:if test="has_milestone_tickets">
+            <div id="milestone_tickets">
+                <h3>${milestone} Tickets</h3>
+                <table class="listing tickets">
+                <thead>
+                    <th>Ticket</th>
+                    <th>Status</th>
+                    <th>Component</th>
+                    <th>Summary</th>
+                </thead>
+                <tbody>
+                    <py:for each="ticket in milestone_tickets">
+                    <tr class="color3-${ticket.__idx__ % 2 and 'odd' or 'even'}">
+                        <td><a href="ticket/${ticket.id}">#${ticket.id}</a></td>
+                        <td><a href="ticket/${ticket.id}">${ticket.status}</a></td>
+                        <td><a href="ticket/${ticket.id}">${ticket.component}</a></td>
+                        <td><a href="ticket/${ticket.id}">${ticket.summary}</a></td>
+                    </tr>
+                    </py:for>
+                </tbody>
+                </table>
+            </div>
+            </py:if>
+
             <py:if test="has_updated_tickets">
             <div id="updated_tickets">
                 <h3>Updated in the last ${backDate} days</h3>

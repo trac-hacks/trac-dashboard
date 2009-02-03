@@ -129,6 +129,24 @@ class DashBoard(Component):
             out.append(data)
         return out
 
+    def get_milestone_tickets(self):
+        cursor = self.db.cursor()
+        sql = "select id, component, summary, status from ticket where (owner = '%s') and (status not in ('%s', 'new')) and (type = 'defect') and (milestone = '%s') order by changetime desc" % (self.username, self.ticket_closed_sql, self.milestone)
+        cursor.execute(sql)
+        out = []
+        idx = 0
+        for id, component, summary, status in cursor:
+            data = {
+                '__idx__': idx,
+                'id': id,
+                'component': component,
+                'summary': summary,
+                'status': status
+            }
+            idx = idx + 1
+            out.append(data)
+        return out
+
     def get_todo_tickets(self):
         cursor = self.db.cursor()
         sql = "select id, component, summary, status from ticket where (owner = '%s') and (status not in ('%s')) and (type = 'task') order by changetime desc" % (self.username, self.ticket_closed_sql)
@@ -231,7 +249,7 @@ class DashBoard(Component):
         data['stamp'] = self.stamp
 
         data['username'] = self.username
-        data['default_milestone'] = self.milestone
+        data['milestone'] = self.milestone
         #Updated Tickets 
         data['updated_tickets'] = self.get_updated_tickets()
         data['has_updated_tickets'] = len(data['updated_tickets'])
@@ -253,6 +271,10 @@ class DashBoard(Component):
         #Milestones
         data['milestone_data'] = self.get_milestone_data()
         data['has_milestones'] = len(data['milestone_data'])
+
+        #Milestone Tickets
+        data['milestone_tickets'] = self.get_milestone_tickets()
+        data['has_milestone_tickets'] = len(data['milestone_tickets'])
 
 
         add_script(req, "dashboard/dashboard.js")
