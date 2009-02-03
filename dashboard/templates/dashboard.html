@@ -52,6 +52,25 @@
             </div>
             </py:if>
 
+
+            <py:if test="has_todo_tickets">
+            <div id="todo_tickets">
+                <h3>My To Do Items</h3>
+                <table class="listing tickets">
+                <thead>
+                    <th>Summary</th>
+                </thead>
+                <tbody>
+                    <py:for each="ticket in todo_tickets">
+                    <tr class="color3-${ticket.__idx__ % 2 and 'odd' or 'even'}">
+                        <td><a href="ticket/${ticket.id}">${ticket.summary}</a></td>
+                    </tr>
+                    </py:for>
+                </tbody>
+                </table>
+            </div>
+            </py:if>
+
             <py:if test="has_ticket_counts">
             <div id="ticket_counts">
                 <h3>Tickets that I own</h3>
@@ -68,25 +87,6 @@
                             <td>${item.type}</td>
                             <td>${item.status}</td>
                         </tr>
-                    </py:for>
-                </tbody>
-                </table>
-            </div>
-            </py:if>
-
-
-            <py:if test="has_todo_tickets">
-            <div id="todo_tickets">
-                <h3>My To Do Items</h3>
-                <table class="listing tickets">
-                <thead>
-                    <th>Summary</th>
-                </thead>
-                <tbody>
-                    <py:for each="ticket in todo_tickets">
-                    <tr class="color3-${ticket.__idx__ % 2 and 'odd' or 'even'}">
-                        <td><a href="ticket/${ticket.id}">${ticket.summary}</a></td>
-                    </tr>
                     </py:for>
                 </tbody>
                 </table>
@@ -127,6 +127,7 @@
                 <thead>
                     <th>Ticket</th>
                     <th>Status</th>
+                    <th>Priority</th>
                     <th>Component</th>
                     <th>Summary</th>
                 </thead>
@@ -135,6 +136,7 @@
                     <tr class="color3-${ticket.__idx__ % 2 and 'odd' or 'even'}">
                         <td><a href="ticket/${ticket.id}">#${ticket.id}</a></td>
                         <td><a href="ticket/${ticket.id}">${ticket.status}</a></td>
+                        <td><a href="ticket/${ticket.id}">${ticket.priority}</a></td>
                         <td><a href="ticket/${ticket.id}">${ticket.component}</a></td>
                         <td><a href="ticket/${ticket.id}">${ticket.summary}</a></td>
                     </tr>
