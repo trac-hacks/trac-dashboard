@@ -29,6 +29,9 @@ class DashBoard(Component):
         self.username = None
         self.backDate = 14
         self.ticket_closed = ['checkedin', 'closed']
+
+        self.ticket_closed_sql = "','".join(self.ticket_closed)
+
         self.milestone = self.default_milestone
         
         if self.permission:
@@ -92,7 +95,7 @@ class DashBoard(Component):
  
     def get_updated_tickets(self):
         cursor = self.db.cursor()
-        sql = "select id, component, summary, status from ticket where (owner = '%s') and (changetime >= %s) and (status not in ('checkedin', 'closed', 'new')) order by changetime desc" % (self.username, self.stamp)
+        sql = "select id, component, summary, status from ticket where (owner = '%s') and (changetime >= %s) and (status not in ('%s', 'new')) order by changetime desc" % (self.username, self.stamp, self.ticket_closed_sql)
         cursor.execute(sql)
         out = []
         idx = 0
@@ -110,7 +113,7 @@ class DashBoard(Component):
 
     def get_new_tickets(self):
         cursor = self.db.cursor()
-        sql = "select id, component, summary, status from ticket where (owner = '%s') and (time >= %s) and (status = 'new') and (type = 'defect') order by changetime desc" % (self.username, self.stamp)
+        sql = "select id, component, summary, status from ticket where (owner = '%s') and (status = 'new') and (type = 'defect') order by changetime desc" % self.username
         cursor.execute(sql)
         out = []
         idx = 0
@@ -128,7 +131,7 @@ class DashBoard(Component):
 
     def get_todo_tickets(self):
         cursor = self.db.cursor()
-        sql = "select id, component, summary, status from ticket where (owner = '%s') and (status not in ('checkedin', 'closed')) and (type = 'task') order by changetime desc" % self.username
+        sql = "select id, component, summary, status from ticket where (owner = '%s') and (status not in ('%s')) and (type = 'task') order by changetime desc" % (self.username, self.ticket_closed_sql)
         cursor.execute(sql)
         out = []
         idx = 0
@@ -146,7 +149,25 @@ class DashBoard(Component):
 
     def get_ticket_counts(self):
         cursor = self.db.cursor()
-        sql = "select count(*) as total, status from ticket where (owner = '%s') and (changetime >= %s) and (type = 'defect') group by status" % (self.username, self.stamp)
+        sql = "select count(*) as total, type, status from ticket where (owner = '%s') and (status not in ('%s')) group by type, status order by total desc" % (self.username, self.ticket_closed_sql)
+        cursor.execute(sql)
+        out = []
+        idx = 0
+        for total, type, status in cursor:
+            data = {
+                '__idx__': idx,
+                'total': total,
+                'status': status,
+                'type': type
+            }
+            idx = idx + 1
+            out.append(data)
+
+        return out
+
+    def get_action_counts(self):
+        cursor = self.db.cursor()
+        sql = "select count(*) as total, concat(oldvalue, ' => ', newvalue) as status from ticket_change where (author = '%s') and (time > %s) and (field = 'status') group by status order by total desc" % (self.username, self.stamp)
         cursor.execute(sql)
         out = []
         idx = 0
@@ -207,6 +228,8 @@ class DashBoard(Component):
         today = datetime.now(req.tz)
 
         data['backDate'] = self.backDate
+        data['stamp'] = self.stamp
+
         data['username'] = self.username
         data['default_milestone'] = self.milestone
         #Updated Tickets 
@@ -218,6 +241,11 @@ class DashBoard(Component):
         #Ticket Counts
         data['ticket_counts'] = self.get_ticket_counts()
         data['has_ticket_counts'] = len(data['ticket_counts'])
+
+        #Action Counts
+        data['action_counts'] = self.get_action_counts()
+        data['has_action_counts'] = len(data['action_counts'])
+
         #TODO Lists
         data['todo_tickets'] = self.get_todo_tickets()
         data['has_todo_tickets'] = len(data['todo_tickets'])

@@ -13,7 +13,6 @@
 <body>
 <div class="dashboard">
     <h1>Developer Dashboard for ${username}</h1>
-
     <div class="yui-gf">
         <div class="yui-u first">
             <py:if test="has_milestones">
@@ -33,18 +32,40 @@
                     </ul>
                 </div>
             </py:if>
-            <py:if test="has_ticket_counts">
-            <div id="ticket_counts">
+            <py:if test="has_action_counts">
+            <div id="action_counts">
                 <h3>Status Changes in the last ${backDate} days</h3>
                 <table class="listing tickets">
                 <thead>
                     <th>#</th>
+                    <th>Action</th>
+                </thead>
+                <tbody>
+                    <py:for each="item in action_counts">
+                        <tr class="color3-${item.__idx__ % 2 and 'odd' or 'even'}">
+                            <td>${item.total}</td>
+                            <td>${item.status}</td>
+                        </tr>
+                    </py:for>
+                </tbody>
+                </table>
+            </div>
+            </py:if>
+
+            <py:if test="has_ticket_counts">
+            <div id="ticket_counts">
+                <h3>Tickets that I own</h3>
+                <table class="listing tickets">
+                <thead>
+                    <th>#</th>
+                    <th>Type</th>
                     <th>Status</th>
                 </thead>
                 <tbody>
                     <py:for each="item in ticket_counts">
                         <tr class="color3-${item.__idx__ % 2 and 'odd' or 'even'}">
                             <td>${item.total}</td>
+                            <td>${item.type}</td>
                             <td>${item.status}</td>
                         </tr>
                     </py:for>
@@ -77,7 +98,7 @@
         <div class="yui-u">
             <py:if test="has_new_tickets">
             <div id="new_tickets">
-                <h3>New Tickets in the last ${backDate} days</h3>
+                <h3>New Tickets (Action Required)</h3>
                 <table class="listing tickets">
                 <thead>
                     <th>Ticket</th>
