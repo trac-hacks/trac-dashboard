@@ -27,7 +27,7 @@ class DashBoard(Component):
     def __init__(self):
         self.db = self.env.get_db_cnx()
         self.username = None
-        self.backDate = 14
+        self.backDate = 30
         self.ticket_closed = ['checkedin', 'closed']
 
         self.ticket_closed_sql = "','".join(self.ticket_closed)
@@ -113,17 +113,37 @@ class DashBoard(Component):
 
     def get_new_tickets(self):
         cursor = self.db.cursor()
-        sql = "select id, component, summary, status from ticket where (owner = '%s') and (status = 'new') and (type = 'defect') order by changetime desc" % self.username
+        sql = "select id, component, summary, changetime, priority from ticket where (owner = '%s') and (status = 'new') and (type = 'defect') order by changetime desc" % self.username
         cursor.execute(sql)
         out = []
         idx = 0
-        for id, component, summary, status in cursor:
+        for id, component, summary, changetime, priority in cursor:
             data = {
                 '__idx__': idx,
                 'id': id,
                 'component': component,
                 'summary': summary,
-                'status': status
+                'priority': priority,
+                'changetime': datetime.fromtimestamp(changetime, utc)
+            }
+            idx = idx + 1
+            out.append(data)
+        return out
+
+    def get_closed_tickets(self):
+        cursor = self.db.cursor()
+        sql = "select id, component, summary, changetime, status from ticket where (owner = '%s') and (status in ('%s')) and (changetime >= %s) order by component, status, changetime desc" % (self.username, self.ticket_closed_sql, self.stamp)
+        cursor.execute(sql)
+        out = []
+        idx = 0
+        for id, component, summary, changetime, status in cursor:
+            data = {
+                '__idx__': idx,
+                'id': id,
+                'component': component,
+                'summary': summary,
+                'status': status,
+                'changetime': datetime.fromtimestamp(changetime, utc)
             }
             idx = idx + 1
             out.append(data)
@@ -186,8 +206,10 @@ class DashBoard(Component):
 
     def get_action_counts(self):
         cursor = self.db.cursor()
-        sql = "select count(*) as total, concat(oldvalue, ' => ', newvalue) as status from ticket_change where (author = '%s') and (time > %s) and (field = 'status') group by status order by total desc" % (self.username, self.stamp)
+        #sql = "select count(*) as total, concat(oldvalue, ' => ', newvalue) as status from ticket_change where (author = '%s') and (time > %s) and (field = 'status') group by status order by total desc" % (self.username, self.stamp)
+        sql = "select count(*) as total, (%s) as status from ticket_change where (author = '%s') and (time > %s) and (field = 'status') group by status order by total desc" % (self.db.concat('oldvalue', "' => '", 'newvalue'), self.username, self.stamp)
         cursor.execute(sql)
+            
         out = []
         idx = 0
         for total, status in cursor:
@@ -246,17 +268,25 @@ class DashBoard(Component):
         self.stamp = time.time() - (60 * 60 * 24 * self.backDate)
         today = datetime.now(req.tz)
 
+
         data['backDate'] = self.backDate
         data['stamp'] = self.stamp
+
 
         data['username'] = self.username
         data['milestone'] = self.milestone
         #Updated Tickets 
         data['updated_tickets'] = self.get_updated_tickets()
         data['has_updated_tickets'] = len(data['updated_tickets'])
+
         #New Tickets
         data['new_tickets'] = self.get_new_tickets()
         data['has_new_tickets'] = len(data['new_tickets'])
+
+        #Closed Tickets
+        data['closed_tickets'] = self.get_closed_tickets()
+        data['has_closed_tickets'] = len(data['closed_tickets'])
+
         #Ticket Counts
         data['ticket_counts'] = self.get_ticket_counts()
         data['has_ticket_counts'] = len(data['ticket_counts'])
