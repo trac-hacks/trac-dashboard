@@ -73,6 +73,8 @@ class DashBoard(Component):
         self.username = req.authname
         if 'milestone' in req.args:
             self.milestone = req.args.get('milestone')
+        else:
+            self.milestone = self.default_milestone
 
         if self.milestone == '':
             cursor = self.db.cursor()
@@ -81,9 +83,10 @@ class DashBoard(Component):
             for name in cursor:
                 self.milestone = name
 
-        if 'TRAC_ADMIN' in req.perm:
-            if 'dev' in req.args:
-                self.username = req.args.get('dev')
+        if 'dev' in req.args:
+            self.username = req.args.get('dev')
+        else:
+            self.username = req.authname
 
             return serve
 
@@ -236,7 +239,7 @@ class DashBoard(Component):
             'inprogress_percent': 0,
             'name': self.milestone
         }
-
+        #sql = "select count(*) as total, ticket.status from ticket, ticket_custom where (ticket.milestone = '%s') and (ticket.owner = '%s') and (ticket.id = ticket_custom.ticket) and (ticket_custom.name = 'location') and (ticket_custom.value = 'Library Code')"  % (self.milestone, self.username)
         sql = "select count(*) as total, status from ticket where (milestone = '%s') and (owner = '%s') and (type = 'defect') group by status" % (self.milestone, self.username)
         cursor.execute(sql)
 
@@ -261,7 +264,29 @@ class DashBoard(Component):
 
 
         return out
-        
+
+    def get_milestones(self):
+        cursor = self.db.cursor()
+        sql = "select name from milestone where (name not in ('%s')) and (completed = 0)" % self.milestone
+        cursor.execute(sql)
+        data = []
+        for name in cursor:
+            data.append(name)
+
+        return data
+
+    def get_users(self):
+        devs = self.env.get_known_users()
+        odevs = []
+        for username,name,email in devs:
+            if username != self.username:
+                data = {
+                    'username': username,
+                    'name': name or username
+                }
+                odevs.append(data)
+        return odevs
+
 
     def process_request(self, req):
         data = {}
@@ -271,10 +296,9 @@ class DashBoard(Component):
 
         data['backDate'] = self.backDate
         data['stamp'] = self.stamp
-
-
         data['username'] = self.username
         data['milestone'] = self.milestone
+
         #Updated Tickets 
         data['updated_tickets'] = self.get_updated_tickets()
         data['has_updated_tickets'] = len(data['updated_tickets'])
@@ -306,6 +330,12 @@ class DashBoard(Component):
         #Milestone Tickets
         data['milestone_tickets'] = self.get_milestone_tickets()
         data['has_milestone_tickets'] = len(data['milestone_tickets'])
+
+        #Milestones
+        data['milestones'] = self.get_milestones()
+
+        #Users
+        data['users'] = self.get_users()
 
 
         add_script(req, "dashboard/dashboard.js")

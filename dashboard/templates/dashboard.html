@@ -13,6 +13,26 @@
 <body>
 <div class="dashboard">
     <h1>Developer Dashboard for ${username}</h1>
+    <div id="dash_toc">
+        <form method="get" action="dashboard">
+        <fieldset>
+            <legend>Filter</legend>
+            <label for="milestone">Milestone:</label> <select id="milestone" name="milestone">
+                <option value="${milestone_data.name}" selected="selected">${milestone_data.name}</option>
+                <py:for each="item in milestones">
+                    <option value="${item}">${item}</option>
+                </py:for>
+            </select>
+            <label for="dev">User:</label> <select id="dev" name="dev">
+                <option value="${username}" selected="selected">${username}</option>
+                <py:for each="item in users">
+                    <option value="${item.username}">${item.name}</option>
+                </py:for>
+            </select>
+            <input type="submit" name="go" value="Change" />
+        </fieldset>
+        </form>
+    </div>
     <div class="yui-gf">
         <div class="yui-u first">
             <py:if test="has_milestones">
@@ -98,12 +118,12 @@
         <div class="yui-u">
             <py:if test="has_new_tickets">
             <div id="new_tickets">
-                <h3>New Tickets (Action Required)</h3>
+                <h3>(${has_new_tickets}) New Tickets (Action Required)</h3>
                 <table class="listing tickets">
                 <thead>
                     <th>Ticket</th>
                     <th>Priority</th>
-                    <th>When</th>
+                    <th>Age</th>
                     <th>Component</th>
                     <th>Summary</th>
                 </thead>
@@ -124,7 +144,7 @@
 
             <py:if test="has_milestone_tickets">
             <div id="milestone_tickets">
-                <h3>${milestone} Tickets (${has_milestone_tickets})</h3>
+                <h3>(${has_milestone_tickets}) ${milestone} Tickets</h3>
                 <table class="listing tickets">
                 <thead>
                     <th>Ticket</th>
@@ -150,7 +170,7 @@
 
             <py:if test="has_updated_tickets">
             <div id="updated_tickets">
-                <h3>Updated in the last ${backDate} days (${has_updated_tickets})</h3>
+                <h3>(${has_updated_tickets}) Updated in the last ${backDate} days</h3>
                 <table class="listing tickets">
                 <thead>
                     <th>Ticket</th>
@@ -174,12 +194,12 @@
 
             <py:if test="has_closed_tickets">
             <div id="closed_tickets">
-                <h3>Closed in the last ${backDate} days (${has_closed_tickets})</h3>
+                <h3>(${has_closed_tickets}) Closed in the last ${backDate} days</h3>
                 <table class="listing tickets">
                 <thead>
                     <th>Ticket</th>
                     <th>Status</th>
-                    <th>When</th>
+                    <th>Age</th>
                     <th>Component</th>
                     <th>Summary</th>
                 </thead>

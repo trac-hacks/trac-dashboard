@@ -53,3 +53,14 @@
     margin: 0;
     font-size: 80%;
 }
+
+.dashboard {
+    position: relative;
+}
+
+.dashboard #dash_toc {
+    width: 400px;
+    position: absolute;
+    top: 5px;
+    right: 50px;
+}
