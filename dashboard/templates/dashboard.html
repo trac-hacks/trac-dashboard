@@ -35,7 +35,7 @@
     </div>
     <div class="yui-gf">
         <div class="yui-u first">
-            <py:if test="has_milestones">
+            <py:if test="has_milestones > 0">
                 <h3>Milestone ${milestone_data.name}</h3>
                 <div class="milestone-chart">
                     <div class="bar">
@@ -118,7 +118,7 @@
         <div class="yui-u">
             <py:if test="has_new_tickets">
             <div id="new_tickets">
-                <h3>(${has_new_tickets}) New Tickets (Action Required)</h3>
+                <h3>(${has_new_tickets}) New/Assigned Tickets (Action Required)</h3>
                 <table class="listing tickets">
                 <thead>
                     <th>Ticket</th>
@@ -142,7 +142,6 @@
             </div>
             </py:if>
 
-            <py:if test="has_milestone_tickets">
             <div id="milestone_tickets">
                 <h3>(${has_milestone_tickets}) ${milestone} Tickets</h3>
                 <table class="listing tickets">
@@ -154,6 +153,12 @@
                     <th>Summary</th>
                 </thead>
                 <tbody>
+                <py:if test="has_milestone_tickets == 0">
+                    <tr class="color3-even">
+                        <td colspan="5">No tickets found for this query</td>
+                    </tr>
+                </py:if>
+                <py:if test="has_milestone_tickets > 0">
                     <py:for each="ticket in milestone_tickets">
                     <tr class="color3-${ticket.__idx__ % 2 and 'odd' or 'even'}">
                         <td><a href="ticket/${ticket.id}">#${ticket.id}</a></td>
@@ -163,12 +168,11 @@
                         <td><a href="ticket/${ticket.id}">${ticket.summary}</a></td>
                     </tr>
                     </py:for>
+                </py:if>
                 </tbody>
                 </table>
             </div>
-            </py:if>
 
-            <py:if test="has_updated_tickets">
             <div id="updated_tickets">
                 <h3>(${has_updated_tickets}) Updated in the last ${backDate} days</h3>
                 <table class="listing tickets">
@@ -179,6 +183,12 @@
                     <th>Summary</th>
                 </thead>
                 <tbody>
+                <py:if test="has_updated_tickets == 0">
+                    <tr class="color3-even">
+                        <td colspan="4">No tickets found for this query</td>
+                    </tr>
+                </py:if>
+                <py:if test="has_updated_tickets">
                     <py:for each="ticket in updated_tickets">
                     <tr class="color3-${ticket.__idx__ % 2 and 'odd' or 'even'}">
                         <td><a href="ticket/${ticket.id}">#${ticket.id}</a></td>
@@ -187,12 +197,11 @@
                         <td><a href="ticket/${ticket.id}">${ticket.summary}</a></td>
                     </tr>
                     </py:for>
+                </py:if>
                 </tbody>
                 </table>
             </div>
-            </py:if>
 
-            <py:if test="has_closed_tickets">
             <div id="closed_tickets">
                 <h3>(${has_closed_tickets}) Closed in the last ${backDate} days</h3>
                 <table class="listing tickets">
@@ -204,19 +213,25 @@
                     <th>Summary</th>
                 </thead>
                 <tbody>
-                    <py:for each="ticket in closed_tickets">
-                    <tr class="color3-${ticket.__idx__ % 2 and 'odd' or 'even'}">
-                        <td><a href="ticket/${ticket.id}">#${ticket.id}</a></td>
-                        <td><a href="ticket/${ticket.id}">${ticket.status}</a></td>
-                        <td><a href="ticket/${ticket.id}">${dateinfo(ticket.changetime)}</a></td>
-                        <td><a href="ticket/${ticket.id}">${ticket.component}</a></td>
-                        <td><a href="ticket/${ticket.id}">${ticket.summary}</a></td>
-                    </tr>
-                    </py:for>
+                    <py:if test="has_closed_tickets == 0">
+                        <tr class="color3-even">
+                            <td colspan="5">No tickets found for this query</td>
+                        </tr>
+                    </py:if>
+                    <py:if test="has_closed_tickets">
+                        <py:for each="ticket in closed_tickets">
+                        <tr class="color3-${ticket.__idx__ % 2 and 'odd' or 'even'}">
+                            <td><a href="ticket/${ticket.id}">#${ticket.id}</a></td>
+                            <td><a href="ticket/${ticket.id}">${ticket.status}</a></td>
+                            <td><a href="ticket/${ticket.id}">${dateinfo(ticket.changetime)}</a></td>
+                            <td><a href="ticket/${ticket.id}">${ticket.component}</a></td>
+                            <td><a href="ticket/${ticket.id}">${ticket.summary}</a></td>
+                        </tr>
+                        </py:for>
+                    </py:if>
                 </tbody>
                 </table>
             </div>
-            </py:if>
         </div>
     </div>
 </div>

@@ -22,7 +22,7 @@ class DashBoard(Component):
     implements(IRequestHandler, ITemplateProvider, IPermissionRequestor, INavigationContributor)
     
     permission = Option('dashboard', 'permission', '')
-    default_milestone = Option('ticket', 'default_milestone', '')
+    default_milestone = Option('dashboard', 'default_milestone', '')
 
     def __init__(self):
         self.db = self.env.get_db_cnx()
@@ -116,14 +116,15 @@ class DashBoard(Component):
 
     def get_new_tickets(self):
         cursor = self.db.cursor()
-        sql = "select id, component, summary, changetime, priority from ticket where (owner = '%s') and (status = 'new') and (type = 'defect') order by changetime desc" % self.username
+        sql = "select id, status, component, summary, changetime, priority from ticket where (owner = '%s') and (status in ('new', 'assigned')) and (type = 'defect') order by changetime desc" % self.username
         cursor.execute(sql)
         out = []
         idx = 0
-        for id, component, summary, changetime, priority in cursor:
+        for id, status, component, summary, changetime, priority in cursor:
             data = {
                 '__idx__': idx,
                 'id': id,
+                'status': status,
                 'component': component,
                 'summary': summary,
                 'priority': priority,
