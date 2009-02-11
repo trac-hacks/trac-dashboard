@@ -155,7 +155,7 @@ class DashBoard(Component):
 
     def get_milestone_tickets(self):
         cursor = self.db.cursor()
-        sql = "select id, component, summary, status, priority from ticket where (owner = '%s') and (status not in ('%s', 'new')) and (type = 'defect') and (milestone = '%s') order by component, priority" % (self.username, self.ticket_closed_sql, self.milestone)
+        sql = "select id, component, summary, status, priority from ticket where (owner = '%s') and (status not in ('%s', 'new')) and (type in ('defect', 'enhancement')) and (milestone = '%s') order by component, priority" % (self.username, self.ticket_closed_sql, self.milestone)
         cursor.execute(sql)
         out = []
         idx = 0
