@@ -80,7 +80,7 @@ class DashBoard(Component):
             cursor = self.db.cursor()
             sql = "select name from milestone where (completed = 0) limit 0, 1"
             cursor.execute(sql)
-            for name in cursor:
+            for name, in cursor:
                 self.milestone = name
 
         if 'dev' in req.args:
@@ -271,7 +271,7 @@ class DashBoard(Component):
         sql = "select name from milestone where (name not in ('%s')) and (completed = 0)" % self.milestone
         cursor.execute(sql)
         data = []
-        for name in cursor:
+        for name, in cursor:
             data.append(name)
 
         return data
