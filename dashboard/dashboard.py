@@ -5,7 +5,7 @@ from trac.web.api import IRequestHandler, Href
 from trac.util.translation import _
 from trac.web.chrome import add_stylesheet, add_script, INavigationContributor, ITemplateProvider
 from trac.web.chrome import Chrome
-from trac.util.datefmt import utc, to_timestamp
+from trac.util.datefmt import utc, to_timestamp, from_utimestamp
 from genshi.template import TemplateLoader
 from genshi.filters.transform import Transformer
 from trac.web.api import ITemplateStreamFilter
@@ -128,7 +128,7 @@ class DashBoard(Component):
                 'component': component,
                 'summary': summary,
                 'priority': priority,
-                'changetime': datetime.fromtimestamp(changetime, utc)
+                'changetime': from_utimestamp(changetime)
             }
             idx = idx + 1
             out.append(data)
